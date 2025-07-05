@@ -38,7 +38,9 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #ifndef FPC_DRM_INTERFACE_WA
-#include <linux/msm_drm_notify.h>
+
+#include <drm/drm_notifier.h>
+
 #endif
 #include <linux/mutex.h>
 #include <linux/of.h>
@@ -49,6 +51,7 @@
 #include <linux/fb.h>
 #include <linux/pinctrl/qcom-pinctrl.h>
 #include <drm/drm_bridge.h>
+
 
 #define FPC1020_NAME "fpc1020"
 
@@ -127,7 +130,9 @@ struct fpc1020_data {
 	atomic_t wakeup_enabled;	/* Used both in ISR and non-ISR */
 	int irqf;
 #ifndef FPC_DRM_INTERFACE_WA
-	struct notifier_block notifier;
+
+	struct notifier_block fb_notifier;
+
 #endif
 	bool fb_black;
 	bool wait_finger_down;
@@ -1003,8 +1008,11 @@ static int fpc_fb_notif_callback(struct notifier_block *nb,
 				 unsigned long val, void *data)
 {
 	struct fpc1020_data *fpc1020 = container_of(nb, struct fpc1020_data,
-						    notifier);
-	struct msm_drm_notifier *evdata = data;
+
+
+	fb_notifier);
+	struct fb_event *evdata = data;					    
+
 	unsigned int blank;
 
 	if (!fpc1020)
@@ -1120,6 +1128,7 @@ static int fpc1020_probe(struct platform_device *pdev)
 		goto exit;
 	}
 
+
 	rc = sysfs_create_group(&dev->kobj, &attribute_group);
 	if (rc) {
 		dev_err(dev, "fpc could not create sysfs\n");
@@ -1143,7 +1152,9 @@ static int fpc1020_probe(struct platform_device *pdev)
 #ifndef FPC_DRM_INTERFACE_WA
 	INIT_WORK(&fpc1020->work, notification_work);
 	fpc1020->notifier = fpc_notif_block;
-	msm_drm_register_client(&fpc1020->notifier);
+
+	drm_register_client(&fpc1020->notifier);
+
 #endif
 
 	//rc = hw_reset(fpc1020);
@@ -1160,7 +1171,9 @@ static int fpc1020_remove(struct platform_device *pdev)
 	struct fpc1020_data *fpc1020 = platform_get_drvdata(pdev);
 
 #ifndef FPC_DRM_INTERFACE_WA
-	msm_drm_unregister_client(&fpc1020->notifier);
+
+	drm_unregister_client(&fpc1020->fb_notifier);
+
 #endif
 	sysfs_remove_group(&pdev->dev.kobj, &attribute_group);
 	mutex_destroy(&fpc1020->lock);
@@ -1185,7 +1198,8 @@ MODULE_DEVICE_TABLE(of, fpc1020_of_match);
 
 static struct platform_driver fpc1020_driver = {
 	.driver = {
-		   .name = FPC1020_NAME,
+
+		   .name = "FPC1020_NAME",
 		   .owner = THIS_MODULE,
 		   .of_match_table = fpc1020_of_match,
 		   },
