@@ -187,7 +187,7 @@ struct rb_node *rdxtree_matched_gap(struct iova_domain *iovad,
 				}
 
 				if (size_aligned)
-					pad_size = iova_get_pad_size(size, limit_size, MAX_ALIGN(iova_shift(iovad)));
+					pad_size = iova_get_pad_size(size, limit_size,(unsigned int)MAX_ALIGN(iova_shift(iovad)));
 
 				/*
 				 *  best fit
