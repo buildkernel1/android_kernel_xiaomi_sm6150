@@ -231,7 +231,9 @@ static int __alloc_and_insert_iova_range(struct iova_domain *iovad,
 	unsigned long flags;
 	unsigned long saved_pfn;
 	unsigned int pad_size = 0;
-	unsigned long shift = iova_shift(iovad);
+#ifdef CONFIG_ARM64_DMA_IOMMU_ALIGNMENT
+    	unsigned long shift = iova_shift(iovad);
+#endif
 
 	/* Walk the tree backwards */
 	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
@@ -254,8 +256,8 @@ static int __alloc_and_insert_iova_range(struct iova_domain *iovad,
 			goto move_left;
 		} else if (limit_pfn > curr_iova->pfn_hi) {
 			if (size_aligned)
-				pad_size = iova_get_pad_size(size, limit_pfn,
-							     MAX_ALIGN(shift));
+		pad_size = iova_get_pad_size(size, limit_pfn,
+                             (unsigned int)MAX_ALIGN(shift));
 			if ((curr_iova->pfn_hi + size + pad_size) < limit_pfn)
 				break;	/* found a free slot */
 		}
