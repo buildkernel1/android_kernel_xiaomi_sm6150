@@ -9419,9 +9419,6 @@ redo:
 
 		continue;
 next:
-		trace_sched_load_balance_skip_tasks(env->src_cpu, env->dst_cpu,
-				env->src_grp_type, p->pid, load, task_util(p),
-				cpumask_bits(&p->cpus_allowed)[0]);
 		list_move_tail(&p->se.group_node, tasks);
 	}
 
@@ -11206,7 +11203,9 @@ no_move:
 				busiest->active_balance = 1;
 				busiest->push_cpu = this_cpu;
 				active_balance = 1;
-				mark_reserved(this_cpu);
+#ifdef CONFIG_SCHED_WALT 
+				mark_reserved(this_cpu); 
+#endif
 			}
 			raw_spin_unlock_irqrestore(&busiest->lock, flags);
 

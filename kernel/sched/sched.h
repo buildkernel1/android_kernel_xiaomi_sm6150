@@ -47,6 +47,10 @@
 # define SCHED_WARN_ON(x)	({ (void)(x), 0; })
 #endif
 
+#ifndef FULL_THROTTLE_BOOST
+#define FULL_THROTTLE_BOOST 0
+#endif
+
 struct rq;
 struct cpuidle_state;
 
