@@ -117,7 +117,7 @@ struct nf_conn {
 	bool sip_original_dir;
 	bool sip_reply_dir;
 
-#ifdef CONFIG_IP_NF_TARGET_NATTYPE_MODULE
+#if IS_ENABLED(CONFIG_IP_NF_TARGET_NATTYPE_MODULE)
 	unsigned long nattype_entry;
 #endif
 
