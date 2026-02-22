@@ -22,23 +22,23 @@ jobs:
         
     - name: Fetch Toolchains 
       run: |
-            mkdir clang && curl  https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r547379.tar.gz -RLO && tar -C clang/ -xf clang-*.tar.gz
+            mkdir clang && curl https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-platform-15.0.0_r13/clang-r522817.tar.gz -RLO && tar -C clang/ -xf clang-*.tar.gz
             git clone https://github.com/greenforce-project/gcc-arm64 -b main --depth=1 gcc64
             git clone https://github.com/greenforce-project/gcc-arm -b main --depth=1 gcc32
                                     
     - name: Fetch KernelSU-SuSFS
       run: |
-            curl -LSs "https://raw.githubusercontent.com/buildkernel1/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs  
+            curl -LSs "https://raw.githubusercontent.com/buildkernel1/KernelSU-Next/legacy/kernel/setup.sh" | bash -s legacy    
 
     - name: AOSP Dimensi
       run: |
-            sed -i 's/qcom,mdss-pan-physical-width-dimension = <695>;$/qcom,mdss-pan-physical-width-dimension = <69>;/' arch/arm64/boot/dts/qcom/dsi-panel-k6-38-0c-0a-fhd-dsc-video.dtsi
-            sed -i 's/qcom,mdss-pan-physical-height-dimension = <1546>;$/qcom,mdss-pan-physical-height-dimension = <154>;/' arch/arm64/boot/dts/qcom/dsi-panel-k6-38-0c-0a-fhd-dsc-video.dtsi
+            sed -i 's/qcom,mdss-pan-physical-width-dimension = <695>;$/qcom,mdss-pan-physical-width-dimension = <69>;/' arch/arm64/boot/dts/qcom/xiaomi/sweet/dsi-panel-k6-38-0c-0a-fhd-dsc-video.dtsi
+            sed -i 's/qcom,mdss-pan-physical-height-dimension = <1546>;$/qcom,mdss-pan-physical-height-dimension = <154>;/' arch/arm64/boot/dts/qcom/xiaomi/sweet/dsi-panel-k6-38-0c-0a-fhd-dsc-video.dtsi
                                                                       
     - name: Build
       run: |
             export ARCH=arm64
-            export PATH="${PWD}/clang/bin:${PWD}gcc64/bin:${PWD}gcc32/bin:${PATH}"
+            export PATH="${PWD}/clang/bin:${PWD}/gcc64/bin:${PWD}/gcc32/bin:${PATH}"
             export KBUILD_BUILD_USER=buildkernel1
             export KBUILD_BUILD_HOST=mhddonip
             export KBUILD_COMPILER_STRING="${PWD}/clang"           
@@ -48,7 +48,7 @@ jobs:
             export CROSS_COMPILE=aarch64-linux-android-
             export CROSS_COMPILE_ARM32=arm-linux-androideabi-             
             make O=out vendor/sweet_defconfig 
-            make -j$(nproc --all) O=out CC=clang                   
+            make -j$(nproc --all) O=out CC=clang LD=ld.lld                  
             mv out/.config out/sweet_defconfig.txt
            
     - name: Upload defconfig 
